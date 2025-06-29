@@ -7,7 +7,7 @@ It deploys a DynamoDB-backed sign-up API (HTTP API Gateway → Lambda → Dynamo
 
 ## ✨ What’s inside
 
-
+```text
 infra/
 ├─ main.tf              # root module: DynamoDB + calls lambda/
 ├─ output.tf            # exposes signup_api_url
@@ -19,12 +19,12 @@ infra/
 │     ├─ bcrypt/        # linux-compiled wheels (via Docker build step)
 │     └─ bcrypt-*.dist-info/
 └─ .gitignore           # keeps .terraform/ out of git
+```
 
 
+## 📐 Architecture Diagram
 
-## System Architecture
-
-
+```text
    +──────────────+        POST /signup        +──────────────+
    |  Browser /   | ─────────────────────────▶ |  API Gateway  |
    |  Next.js App |                            +──────▲───────+
@@ -40,7 +40,7 @@ infra/
                                       +──────────────┴──────────────+
                                       | DynamoDB  mathai_users      |
                                       +─────────────────────────────+
-
+```
 
 
 ## 🚀 Getting Started
