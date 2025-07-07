@@ -127,3 +127,20 @@ output "signup_api_url" {
   value       = "${aws_apigatewayv2_api.http_api.api_endpoint}/signup"
 }
 
+############################################
+# 7. New outputs  (for the login module)
+############################################
+output "http_api_id" {
+  description = "HTTP API ID for other modules"
+  value       = aws_apigatewayv2_api.http_api.id
+}
+
+output "http_api_execution_arn" {
+  description = "Execution ARN for lambda:InvokeFunction permission"
+  value       = aws_apigatewayv2_api.http_api.execution_arn
+}
+
+output "base_invoke_url" {
+  description = "Base invoke URL (no path)"
+  value       = aws_apigatewayv2_api.http_api.api_endpoint
+}

@@ -55,3 +55,13 @@ module "signup_lambda" {
   dynamodb_table_arn = aws_dynamodb_table.users.arn
 }
 
+module "login_lambda" {
+  source              = "./login"
+  lambda_name         = "mathai_login_handler"
+  dynamodb_table      = aws_dynamodb_table.users.name
+  dynamodb_table_arn  = aws_dynamodb_table.users.arn
+  http_api_id         = module.signup_lambda.http_api_id          # export these in signup module
+  http_api_execution_arn = module.signup_lambda.http_api_execution_arn
+  base_invoke_url         = module.signup_lambda.base_invoke_url
+}
+
