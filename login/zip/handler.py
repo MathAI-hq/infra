@@ -1,48 +1,58 @@
-import os, json, datetime, bcrypt, boto3
+import json
+import os
+import datetime
+import bcrypt
+import boto3
 from boto3.dynamodb.conditions import Key
 
-table = boto3.resource("dynamodb").Table(os.environ["TABLE_NAME"])
+dynamodb = boto3.resource("dynamodb")
+table = dynamodb.Table(os.environ["TABLE_NAME"])
 
-def bad_request(msg, code=400):
-    return {
-        "statusCode": code,
-        "headers": {"Access-Control-Allow-Origin": "*"},
-        "body": msg
-    }
-
-def handler(event, _):
+def handler(event, context):
+    # Parse body
     body = json.loads(event.get("body") or "{}")
+    email    = body.get("user_email")
+    password = body.get("user_password")
 
-    for f in ("user_email", "user_password"):
-        if f not in body:
-            return bad_request(f"Missing {f}")
+    # Validate input
+    if not email or not password:
+        return _response(400, "Missing user_email or user_password")
 
-    # 1. Query by e-mail (GSI)
+    # 1) Query by e-mail via GSI
     resp = table.query(
         IndexName="user_email_index",
-        KeyConditionExpression=Key("user_email").eq(body["user_email"].lower()),
+        KeyConditionExpression=Key("user_email").eq(email.lower()),
         Limit=1
     )
     if resp["Count"] == 0:
-        return bad_request("Invalid credentials", 401)
+        return _response(401, "Invalid credentials")
 
     user = resp["Items"][0]
 
-    # 2. Verify bcrypt hash
-    if not bcrypt.checkpw(body["user_password"].encode(),
-                          user["user_password"].encode()):
-        return bad_request("Invalid credentials", 401)
+    # 2) Verify password
+    if not bcrypt.checkpw(password.encode(), user["user_password"].encode()):
+        return _response(401, "Invalid credentials")
 
-    # 3. Update last_logged_in
+    # 3) Update last_logged_in
     table.update_item(
         Key={"uid": user["uid"]},
         UpdateExpression="SET last_logged_in = :ts",
         ExpressionAttributeValues={":ts": datetime.datetime.utcnow().isoformat()}
     )
 
+    # 4) Success
+    return _response(200, {
+        "uid": user["uid"],
+        "user_name": user["user_name"],
+        "message": "logged-in"
+    })
+
+def _response(status, body):
+    if not isinstance(body, str):
+        body = json.dumps(body)
     return {
-        "statusCode": 200,
+        "statusCode": status,
         "headers": {"Access-Control-Allow-Origin": "*"},
-        "body": json.dumps({"uid": user["uid"], "message": "logged-in"})
+        "body": body
     }
 
