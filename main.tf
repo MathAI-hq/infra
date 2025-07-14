@@ -48,7 +48,7 @@ resource "aws_dynamodb_table" "users" {
 # (module defined in infra/lambda)
 # ───────────────────────────────────────────────
 module "signup_lambda" {
-  source = "./lambda"
+  source = "./signup"
 
   lambda_name        = "mathai_signup_handler"
   dynamodb_table     = aws_dynamodb_table.users.name
