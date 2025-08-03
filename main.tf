@@ -65,3 +65,13 @@ module "login_lambda" {
   base_invoke_url         = module.signup_lambda.base_invoke_url
 }
 
+module "openai_lambda" {
+  source              = "./openAI"
+  lambda_name         = "mathai_openai_handler"
+  dynamodb_table      = aws_dynamodb_table.users.name
+  dynamodb_table_arn  = aws_dynamodb_table.users.arn
+  http_api_id         = module.signup_lambda.http_api_id
+  http_api_execution_arn = module.signup_lambda.http_api_execution_arn
+  base_invoke_url     = module.signup_lambda.base_invoke_url
+  openai_api_key      = var.openai_api_key
+}
